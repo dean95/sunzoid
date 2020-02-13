@@ -28,16 +28,38 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.android.ui.home.mapper
+package com.raywenderlich.android.ui.home
 
-import com.raywenderlich.android.domain.model.Location
-import com.raywenderlich.android.domain.model.LocationDetails
-import com.raywenderlich.android.ui.home.ForecastViewState
-import com.raywenderlich.android.ui.home.LocationViewState
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.TextView
+import com.raywenderlich.android.R
 
-interface HomeViewStateMapper {
+class LocationAdapter(
+    private val layoutInflater: LayoutInflater,
+    private val onLocationClick: (LocationViewState) -> Unit
+) : BaseAdapter() {
 
-  fun mapLocationDetailsToViewState(locationDetails: LocationDetails): List<ForecastViewState>
+  private val locations = mutableListOf<LocationViewState>()
 
-  fun mapLocationsToViewState(locations: List<Location>): List<LocationViewState>
+  override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+    val itemView = layoutInflater.inflate(R.layout.location_list_item, parent, false)
+    itemView.findViewById<TextView>(R.id.location).text = locations[position].location
+    itemView.setOnClickListener { onLocationClick(locations[position]) }
+    return itemView
+  }
+
+  override fun getItem(position: Int) = locations[position]
+
+  override fun getItemId(position: Int) = position.toLong()
+
+  override fun getCount() = locations.size
+
+  fun setData(locations: List<LocationViewState>) {
+    this.locations.clear()
+    this.locations.addAll(locations)
+    notifyDataSetChanged()
+  }
 }

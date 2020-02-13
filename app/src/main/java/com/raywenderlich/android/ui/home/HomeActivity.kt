@@ -30,9 +30,9 @@
 
 package com.raywenderlich.android.ui.home
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
@@ -40,15 +40,20 @@ import androidx.recyclerview.widget.LinearSnapHelper
 import com.raywenderlich.android.R
 import com.raywenderlich.android.util.image_loader.ImageLoader
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class HomeActivity : AppCompatActivity() {
 
   private val imageLoader: ImageLoader by inject()
   private val homeViewModel by viewModel<HomeViewModel>()
 
-  private val adapter by lazy { HomeAdapter(layoutInflater, imageLoader) }
+  private val forecastAdapter by lazy { ForecastAdapter(layoutInflater, imageLoader) }
+  private val locationAdapter by lazy { LocationAdapter(layoutInflater, ::onLocationClick) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -58,19 +63,51 @@ class HomeActivity : AppCompatActivity() {
   }
 
   private fun initUi() {
-    supportActionBar?.setDisplayShowTitleEnabled(false)
+    initSearchBar()
     initRecyclerView()
+    initObservers()
+  }
 
-    homeViewModel.locationDetails.observe(this, Observer {
-      adapter.setData(it.forecasts)
+  private fun initSearchBar() {
+    locationsList.adapter = locationAdapter
+
+    search.isActivated = true
+    search.onActionViewExpanded()
+    search.isIconified = true
+    search.clearFocus()
+
+    search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+      override fun onQueryTextSubmit(query: String): Boolean {
+        return false
+      }
+
+      override fun onQueryTextChange(newText: String): Boolean {
+        homeViewModel.queryChannel.offer(newText)
+        return false
+      }
     })
   }
 
   private fun initRecyclerView() {
     forecastList.layoutManager = LinearLayoutManager(this, HORIZONTAL, false)
-    forecastList.adapter = adapter
+    forecastList.adapter = forecastAdapter
 
     val snapHelper = LinearSnapHelper()
     snapHelper.attachToRecyclerView(forecastList)
+  }
+
+  private fun initObservers() {
+    homeViewModel.locations.observe(this, Observer {
+      locationAdapter.setData(it)
+    })
+
+    homeViewModel.forecasts.observe(this, Observer {
+      forecastAdapter.setData(it)
+    })
+  }
+
+  private fun onLocationClick(locationViewState: LocationViewState) {
+    homeViewModel.queryChannel.offer("")
+    homeViewModel.getLocationDetails(locationViewState.id)
   }
 }

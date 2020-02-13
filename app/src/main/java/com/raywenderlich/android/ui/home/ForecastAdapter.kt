@@ -36,13 +36,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.raywenderlich.android.R
 import com.raywenderlich.android.util.image_loader.ImageLoader
-import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.forecast_list_item.view.*
 
-class HomeAdapter(
+class ForecastAdapter(
     private val layoutInflater: LayoutInflater,
     private val imageLoader: ImageLoader
-) : RecyclerView.Adapter<HomeAdapter.ForecastViewHolder>() {
+) : RecyclerView.Adapter<ForecastAdapter.ForecastViewHolder>() {
 
   private val forecasts: MutableList<ForecastViewState> = mutableListOf()
 

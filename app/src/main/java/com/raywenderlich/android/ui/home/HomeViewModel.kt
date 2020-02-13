@@ -30,34 +30,51 @@
 
 package com.raywenderlich.android.ui.home
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.raywenderlich.android.domain.model.LocationDetails
+import androidx.lifecycle.*
 import com.raywenderlich.android.domain.repository.WeatherRepository
 import com.raywenderlich.android.ui.home.mapper.HomeViewStateMapper
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 
-@UseExperimental(ExperimentalCoroutinesApi::class)
+private const val SEARCH_DELAY_MILLIS = 500L
+private const val MIN_QUERY_LENGTH = 2
+
+@FlowPreview
+@ExperimentalCoroutinesApi
 class HomeViewModel(
     private val weatherRepository: WeatherRepository,
     private val homeViewStateMapper: HomeViewStateMapper
 ) : ViewModel() {
 
-  private val _locationDetails: MutableLiveData<HomeViewState> = MutableLiveData()
-  val locationDetails: LiveData<HomeViewState> = _locationDetails
+  val queryChannel = BroadcastChannel<String>(Channel.CONFLATED)
 
-  init {
-    getLocationDetails(851128)
+  private val _forecasts: MutableLiveData<List<ForecastViewState>> = MutableLiveData()
+  val forecasts: LiveData<List<ForecastViewState>> = _forecasts
+
+  private val _locations = queryChannel.asFlow()
+      .debounce(SEARCH_DELAY_MILLIS)
+      .mapLatest {
+        if (it.length >= MIN_QUERY_LENGTH) {
+          getLocations(it)
+        } else {
+          emptyList()
+        }
+      }
+  val locations = _locations.asLiveData()
+
+
+  private suspend fun getLocations(query: String): List<LocationViewState> {
+    val locations = viewModelScope.async { weatherRepository.findLocation(query) }
+    return homeViewStateMapper.mapLocationsToViewState(locations.await())
   }
 
-  private fun getLocationDetails(cityId: Int) {
+  fun getLocationDetails(cityId: Int) {
     viewModelScope.launch {
       val locationDetails = weatherRepository.getLocationDetails(cityId)
-      val homeViewState = homeViewStateMapper.mapLocationDetailsToViewState(locationDetails)
-      _locationDetails.value = homeViewState
+      val forecastViewState = homeViewStateMapper.mapLocationDetailsToViewState(locationDetails)
+      _forecasts.value = forecastViewState
     }
   }
 }

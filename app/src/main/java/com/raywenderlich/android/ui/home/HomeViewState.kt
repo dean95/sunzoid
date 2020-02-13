@@ -32,10 +32,6 @@ package com.raywenderlich.android.ui.home
 
 import android.text.SpannableString
 
-data class HomeViewState(
-    val forecasts: List<ForecastViewState>
-)
-
 data class ForecastViewState(
     val state: String,
     val windDirection: String,
@@ -48,4 +44,9 @@ data class ForecastViewState(
     val visibility: SpannableString,
     val predictability: SpannableString,
     val iconUrl: String
+)
+
+data class LocationViewState(
+    val id: Int,
+    val location: String
 )
