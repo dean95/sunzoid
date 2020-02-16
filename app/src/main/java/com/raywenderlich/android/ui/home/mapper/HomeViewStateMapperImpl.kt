@@ -38,7 +38,6 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import com.raywenderlich.android.domain.model.Forecast
 import com.raywenderlich.android.domain.model.Location
-import com.raywenderlich.android.domain.model.LocationDetails
 import com.raywenderlich.android.ui.home.ForecastViewState
 import com.raywenderlich.android.ui.home.LocationViewState
 import com.raywenderlich.android.util.extensions.round
@@ -51,8 +50,8 @@ private const val TWO_DECIMALS = 2
 
 class HomeViewStateMapperImpl : HomeViewStateMapper {
 
-  override fun mapLocationDetailsToViewState(locationDetails: LocationDetails): List<ForecastViewState> {
-    return locationDetails.forecasts.map { mapForecastToViewState(it) }
+  override fun mapForecastsToViewState(forecasts: List<Forecast>): List<ForecastViewState> {
+    return forecasts.map { mapForecastToViewState(it) }
   }
 
   override fun mapLocationsToViewState(locations: List<Location>): List<LocationViewState> {

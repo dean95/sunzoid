@@ -28,50 +28,20 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.android.data.network.mapper
+package com.raywenderlich.android.data.db.mapper
 
-import com.raywenderlich.android.data.network.model.ApiForecast
-import com.raywenderlich.android.data.network.model.ApiLocation
-import com.raywenderlich.android.data.network.model.ApiLocationDetails
+import com.raywenderlich.android.data.db.entities.DbForecast
+import com.raywenderlich.android.data.db.entities.DbLocationDetails
 import com.raywenderlich.android.domain.model.Forecast
-import com.raywenderlich.android.domain.model.Location
 import com.raywenderlich.android.domain.model.LocationDetails
 
-class ApiMapperImpl : ApiMapper {
+interface DbMapper {
 
-  override fun mapApiLocationDetailsToDomain(apiLocationDetails: ApiLocationDetails): LocationDetails {
-    return with(apiLocationDetails) {
-      LocationDetails(
-          forecasts.map { mapApiForecastToDomain(it) },
-          time,
-          sunrise,
-          sunset,
-          title,
-          id
-      )
-    }
-  }
+  fun mapDomainLocationDetailsToDb(locationDetails: LocationDetails): DbLocationDetails
 
-  override fun mapApiLocationToDomain(apiLocation: ApiLocation) = Location(
-      apiLocation.id,
-      apiLocation.title
-  )
+  fun mapDbLocationDetailsToDomain(locationDetails: DbLocationDetails): LocationDetails
 
-  private fun mapApiForecastToDomain(apiForecast: ApiForecast) = with(apiForecast) {
-    Forecast(
-        id,
-        weatherState,
-        windDirection,
-        date,
-        minTemp,
-        maxTemp,
-        temp,
-        windSpeed,
-        airPressure,
-        humidity,
-        visibility,
-        predictability,
-        weatherStateAbbreviation
-    )
-  }
+  fun mapDomainForecastsToDb(forecasts: List<Forecast>): List<DbForecast>
+
+  fun mapDbForecastsToDomain(forecasts: List<DbForecast>): List<Forecast>
 }

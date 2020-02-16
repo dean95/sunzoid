@@ -28,27 +28,41 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.android.domain.repository
+package com.raywenderlich.android.data.db.mapper
 
-import com.raywenderlich.android.data.network.client.WeatherApiClient
-import com.raywenderlich.android.data.network.mapper.ApiMapper
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
+import com.raywenderlich.android.data.db.entities.DbForecast
+import com.raywenderlich.android.data.db.entities.DbLocationDetails
+import com.raywenderlich.android.domain.model.Forecast
+import com.raywenderlich.android.domain.model.LocationDetails
 
-class WeatherRepositoryImpl(
-    private val weatherApiClient: WeatherApiClient,
-    private val apiMapper: ApiMapper,
-    private val backgroundDispatcher: CoroutineDispatcher
-) : WeatherRepository {
-
-  override suspend fun findLocation(location: String) = withContext(backgroundDispatcher) {
-    weatherApiClient.findLocation(location)
-        .map(apiMapper::mapApiLocationToDomain)
+class DbMapperImpl : DbMapper {
+  override fun mapDomainLocationDetailsToDb(locationDetails: LocationDetails): DbLocationDetails {
+    return with(locationDetails) {
+      DbLocationDetails(
+          time, sunrise, sunset, title, id
+      )
+    }
   }
 
-  override suspend fun getLocationDetails(id: Int) = withContext(backgroundDispatcher) {
-    apiMapper.mapApiLocationDetailsToDomain(
-        weatherApiClient.getLocationDetails(id)
-    )
+  override fun mapDbLocationDetailsToDomain(locationDetails: DbLocationDetails): LocationDetails {
+    return with(locationDetails) {
+      LocationDetails(emptyList(), time, sunrise, sunset, title, id)
+    }
+  }
+
+  override fun mapDomainForecastsToDb(forecasts: List<Forecast>): List<DbForecast> {
+    return forecasts.map {
+      with(it) {
+        DbForecast(id, state, windDirection, date, minTemp, maxTemp, temp, windSpeed, pressure, humidity, visibility, predictability, weatherStateAbbreviation)
+      }
+    }
+  }
+
+  override fun mapDbForecastsToDomain(forecasts: List<DbForecast>): List<Forecast> {
+    return forecasts.map {
+      with(it) {
+        Forecast(id, state, windDirection, date, minTemp, maxTemp, temp, windSpeed, pressure, humidity, visibility, predictability, weatherStateAbbreviation)
+      }
+    }
   }
 }

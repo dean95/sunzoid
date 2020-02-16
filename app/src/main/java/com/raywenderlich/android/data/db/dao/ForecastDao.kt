@@ -28,50 +28,43 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.android.data.network.mapper
+package com.raywenderlich.android.data.db.dao
 
-import com.raywenderlich.android.data.network.model.ApiForecast
-import com.raywenderlich.android.data.network.model.ApiLocation
-import com.raywenderlich.android.data.network.model.ApiLocationDetails
-import com.raywenderlich.android.domain.model.Forecast
-import com.raywenderlich.android.domain.model.Location
-import com.raywenderlich.android.domain.model.LocationDetails
+import androidx.room.*
+import com.raywenderlich.android.data.db.entities.DbForecast
+import com.raywenderlich.android.data.db.entities.DbLocationDetails
+import kotlinx.coroutines.flow.Flow
 
-class ApiMapperImpl : ApiMapper {
+@Dao
+interface ForecastDao {
 
-  override fun mapApiLocationDetailsToDomain(apiLocationDetails: ApiLocationDetails): LocationDetails {
-    return with(apiLocationDetails) {
-      LocationDetails(
-          forecasts.map { mapApiForecastToDomain(it) },
-          time,
-          sunrise,
-          sunset,
-          title,
-          id
-      )
-    }
+  @Transaction
+  suspend fun updateLocationDetails(locationDetails: DbLocationDetails) {
+    clearLocationDetails()
+    insertLocationDetails(locationDetails)
   }
 
-  override fun mapApiLocationToDomain(apiLocation: ApiLocation) = Location(
-      apiLocation.id,
-      apiLocation.title
-  )
+  @Insert
+  suspend fun insertLocationDetails(locationDetails: DbLocationDetails)
 
-  private fun mapApiForecastToDomain(apiForecast: ApiForecast) = with(apiForecast) {
-    Forecast(
-        id,
-        weatherState,
-        windDirection,
-        date,
-        minTemp,
-        maxTemp,
-        temp,
-        windSpeed,
-        airPressure,
-        humidity,
-        visibility,
-        predictability,
-        weatherStateAbbreviation
-    )
+  @Transaction
+  suspend fun updateForecasts(forecasts: List<DbForecast>) {
+    clearForecasts()
+    insertAllForecast(forecasts)
   }
+
+  @Insert
+  suspend fun insertAllForecast(forecasts: List<DbForecast>)
+
+  @Query("DELETE FROM location_details_table")
+  suspend fun clearLocationDetails()
+
+  @Query("DELETE FROM forecasts_table")
+  suspend fun clearForecasts()
+
+  @Query("SELECT * FROM location_details_table")
+  suspend fun getLocationDetails(): DbLocationDetails?
+
+  @Query("SELECT * FROM forecasts_table")
+  fun getForecasts(): Flow<List<DbForecast>>
 }

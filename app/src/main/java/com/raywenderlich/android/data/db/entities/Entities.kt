@@ -28,50 +28,37 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.android.data.network.mapper
+package com.raywenderlich.android.data.db.entities
 
-import com.raywenderlich.android.data.network.model.ApiForecast
-import com.raywenderlich.android.data.network.model.ApiLocation
-import com.raywenderlich.android.data.network.model.ApiLocationDetails
-import com.raywenderlich.android.domain.model.Forecast
-import com.raywenderlich.android.domain.model.Location
-import com.raywenderlich.android.domain.model.LocationDetails
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class ApiMapperImpl : ApiMapper {
-
-  override fun mapApiLocationDetailsToDomain(apiLocationDetails: ApiLocationDetails): LocationDetails {
-    return with(apiLocationDetails) {
-      LocationDetails(
-          forecasts.map { mapApiForecastToDomain(it) },
-          time,
-          sunrise,
-          sunset,
-          title,
-          id
-      )
-    }
-  }
-
-  override fun mapApiLocationToDomain(apiLocation: ApiLocation) = Location(
-      apiLocation.id,
-      apiLocation.title
-  )
-
-  private fun mapApiForecastToDomain(apiForecast: ApiForecast) = with(apiForecast) {
-    Forecast(
-        id,
-        weatherState,
-        windDirection,
-        date,
-        minTemp,
-        maxTemp,
-        temp,
-        windSpeed,
-        airPressure,
-        humidity,
-        visibility,
-        predictability,
-        weatherStateAbbreviation
-    )
+@Entity(tableName = "location_details_table")
+data class DbLocationDetails(
+    val time: String,
+    val sunrise: String,
+    val sunset: String,
+    val title: String,
+    @PrimaryKey val id: Int
+) {
+  companion object {
+    val EMPTY = DbLocationDetails("", "", "", "", -1)
   }
 }
+
+@Entity(tableName = "forecasts_table")
+data class DbForecast(
+    @PrimaryKey val id: Long,
+    val state: String,
+    val windDirection: String,
+    val date: String,
+    val minTemp: Double,
+    val maxTemp: Double,
+    val temp: Double,
+    val windSpeed: Double,
+    val pressure: Double,
+    val humidity: Double,
+    val visibility: Double,
+    val predictability: Int,
+    val weatherStateAbbreviation: String
+)

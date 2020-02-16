@@ -30,14 +30,14 @@
 
 package com.raywenderlich.android.ui.home.mapper
 
+import com.raywenderlich.android.domain.model.Forecast
 import com.raywenderlich.android.domain.model.Location
-import com.raywenderlich.android.domain.model.LocationDetails
 import com.raywenderlich.android.ui.home.ForecastViewState
 import com.raywenderlich.android.ui.home.LocationViewState
 
 interface HomeViewStateMapper {
 
-  fun mapLocationDetailsToViewState(locationDetails: LocationDetails): List<ForecastViewState>
+  fun mapForecastsToViewState(forecasts: List<Forecast>): List<ForecastViewState>
 
   fun mapLocationsToViewState(locations: List<Location>): List<LocationViewState>
 }

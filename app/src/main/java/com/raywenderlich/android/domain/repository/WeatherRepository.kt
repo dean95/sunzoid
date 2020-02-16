@@ -30,12 +30,16 @@
 
 package com.raywenderlich.android.domain.repository
 
+import com.raywenderlich.android.domain.model.Forecast
 import com.raywenderlich.android.domain.model.Location
 import com.raywenderlich.android.domain.model.LocationDetails
+import kotlinx.coroutines.flow.Flow
 
 interface WeatherRepository {
 
   suspend fun findLocation(location: String): List<Location>
 
   suspend fun getLocationDetails(id: Int): LocationDetails
+
+  fun getForecasts(): Flow<List<Forecast>>
 }

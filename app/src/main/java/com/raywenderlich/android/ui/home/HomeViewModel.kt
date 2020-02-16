@@ -50,8 +50,12 @@ class HomeViewModel(
 
   val queryChannel = BroadcastChannel<String>(Channel.CONFLATED)
 
-  private val _forecasts: MutableLiveData<List<ForecastViewState>> = MutableLiveData()
-  val forecasts: LiveData<List<ForecastViewState>> = _forecasts
+  val forecasts: LiveData<List<ForecastViewState>> = weatherRepository
+      .getForecasts()
+      .map {
+        homeViewStateMapper.mapForecastsToViewState(it)
+      }
+      .asLiveData()
 
   private val _locations = queryChannel.asFlow()
       .debounce(SEARCH_DELAY_MILLIS)
@@ -64,17 +68,16 @@ class HomeViewModel(
       }
   val locations = _locations.asLiveData()
 
-
   private suspend fun getLocations(query: String): List<LocationViewState> {
     val locations = viewModelScope.async { weatherRepository.findLocation(query) }
+
+
     return homeViewStateMapper.mapLocationsToViewState(locations.await())
   }
 
   fun getLocationDetails(cityId: Int) {
     viewModelScope.launch {
-      val locationDetails = weatherRepository.getLocationDetails(cityId)
-      val forecastViewState = homeViewStateMapper.mapLocationDetailsToViewState(locationDetails)
-      _forecasts.value = forecastViewState
+      weatherRepository.getLocationDetails(cityId)
     }
   }
 }

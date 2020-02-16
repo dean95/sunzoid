@@ -31,6 +31,7 @@
 package com.raywenderlich.android.domain.model
 
 data class Forecast(
+    val id: Long,
     val state: String,
     val windDirection: String,
     val date: String,

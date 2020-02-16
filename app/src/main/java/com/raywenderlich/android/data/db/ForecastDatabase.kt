@@ -28,50 +28,31 @@
  * THE SOFTWARE.
  */
 
-package com.raywenderlich.android.data.network.mapper
+package com.raywenderlich.android.data.db
 
-import com.raywenderlich.android.data.network.model.ApiForecast
-import com.raywenderlich.android.data.network.model.ApiLocation
-import com.raywenderlich.android.data.network.model.ApiLocationDetails
-import com.raywenderlich.android.domain.model.Forecast
-import com.raywenderlich.android.domain.model.Location
-import com.raywenderlich.android.domain.model.LocationDetails
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.raywenderlich.android.data.db.dao.ForecastDao
+import com.raywenderlich.android.data.db.entities.DbForecast
+import com.raywenderlich.android.data.db.entities.DbLocationDetails
 
-class ApiMapperImpl : ApiMapper {
+private const val DB_NAME = "forecast_database"
 
-  override fun mapApiLocationDetailsToDomain(apiLocationDetails: ApiLocationDetails): LocationDetails {
-    return with(apiLocationDetails) {
-      LocationDetails(
-          forecasts.map { mapApiForecastToDomain(it) },
-          time,
-          sunrise,
-          sunset,
-          title,
-          id
-      )
+@Database(entities = [(DbLocationDetails::class), (DbForecast::class)], version = 1)
+abstract class ForecastDatabase : RoomDatabase() {
+
+  abstract fun forecastDao(): ForecastDao
+
+  companion object {
+    fun create(context: Context): ForecastDatabase {
+
+      return Room.databaseBuilder(
+          context,
+          ForecastDatabase::class.java,
+          DB_NAME
+      ).build()
     }
-  }
-
-  override fun mapApiLocationToDomain(apiLocation: ApiLocation) = Location(
-      apiLocation.id,
-      apiLocation.title
-  )
-
-  private fun mapApiForecastToDomain(apiForecast: ApiForecast) = with(apiForecast) {
-    Forecast(
-        id,
-        weatherState,
-        windDirection,
-        date,
-        minTemp,
-        maxTemp,
-        temp,
-        windSpeed,
-        airPressure,
-        humidity,
-        visibility,
-        predictability,
-        weatherStateAbbreviation
-    )
   }
 }

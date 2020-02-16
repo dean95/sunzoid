@@ -35,7 +35,10 @@ import com.raywenderlich.android.data.network.client.WeatherApiClient
 import com.raywenderlich.android.data.network.mapper.ApiMapper
 import com.raywenderlich.android.data.network.mapper.ApiMapperImpl
 import com.raywenderlich.android.domain.repository.WeatherRepository
-import com.raywenderlich.android.domain.repository.WeatherRepositoryImpl
+import com.raywenderlich.android.data.WeatherRepositoryImpl
+import com.raywenderlich.android.data.db.ForecastDatabase
+import com.raywenderlich.android.data.db.mapper.DbMapper
+import com.raywenderlich.android.data.db.mapper.DbMapperImpl
 import com.raywenderlich.android.ui.home.mapper.HomeViewStateMapper
 import com.raywenderlich.android.ui.home.mapper.HomeViewStateMapperImpl
 import com.raywenderlich.android.util.image_loader.ImageLoader
@@ -46,6 +49,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -100,7 +104,13 @@ val applicationModule = module {
   }
 
   single<WeatherRepository> {
-    WeatherRepositoryImpl(get(), get(), get(named(BACKGROUND_DISPATCHER)))
+    WeatherRepositoryImpl(
+        get(),
+        get(),
+        get(named(BACKGROUND_DISPATCHER)),
+        get(),
+        get()
+    )
   }
 
   single<ImageLoader> { ImageLoaderImpl(get()) }
@@ -112,4 +122,10 @@ val applicationModule = module {
   single(named(MAIN_DISPATCHER)) { Dispatchers.Main }
 
   single(named(BACKGROUND_DISPATCHER)) { Dispatchers.IO }
+
+  single { ForecastDatabase.create(androidContext()) }
+
+  single { get<ForecastDatabase>().forecastDao() }
+
+  single<DbMapper> { DbMapperImpl() }
 }
